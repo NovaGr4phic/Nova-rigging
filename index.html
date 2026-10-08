@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Rigs - مبدل تکسچر به سه‌بعدی</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: #0a0614;
+    background-image: radial-gradient(circle at 20% 30%, rgba(168,85,247,0.3), transparent 50%),
+                      radial-gradient(circle at 80% 70%, rgba(217,70,239,0.2), transparent 50%);
+    background-attachment: fixed;
+    color: #f5f3ff;
+    min-height: 100vh;
+    padding: 20px 14px;
+    line-height: 1.8;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  
+  /* ===== آیکون‌های SVG ===== */
+  .icon-svg {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    vertical-align: -0.15em;
+    flex-shrink: 0;
+  }
+  .icon-svg svg,
+  svg.icon-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* ===== هدر ===== */
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .logo .icon-svg {
+    width: 36px;
+    height: 36px;
+    color: #c084fc;
+    filter: drop-shadow(0 0 15px rgba(168,85,247,0.6));
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e9d5ff, #a855f7, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sub { color: #a78bfa; font-size: 13px; }
+  
+  /* ===== پنل‌ها ===== */
+  .panel {
+    background: rgba(168,85,247,0.07);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #c084fc;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-title .icon-svg { width: 18px; height: 18px; }
+  
+  /* ===== بخش جستجو ===== */
+  .search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    direction: ltr;
+  }
+  .search-box input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(168,85,247,0.3);
+    background: rgba(168,85,247,0.08);
+    color: #f5f3ff;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+    direction: ltr;
+    text-align: left;
+  }
+  .search-box input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168,85,247,0.3);
+  }
+  .search-box input::placeholder { 
+    color: #6b5b8a;
+    text-align: left;
+  }
+  .search-box button {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    color: white;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .search-box button:active { transform: scale(0.97); }
+  .search-box button .icon-svg { width: 16px; height: 16px; }
+  
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .tag {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.25);
+    color: #c084fc;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .tag:active { background: rgba(168,85,247,0.25); }
+  
+  .results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .result-item {
+    background: rgba(168,85,247,0.06);
+    border: 2px solid rgba(168,85,247,0.2);
+    border-radius: 12px;
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+  }
+  .result-item:active { transform: scale(0.96); }
+  .result-item.selected {
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168,85,247,0.5);
+    background: rgba(168,85,247,0.15);
+  }
+  .result-item img {
+    width: 100%;
+    aspect-ratio: 1;
+    image-rendering: pixelated;
+    border-radius: 6px;
+    background: #150a26;
+    object-fit: contain;
+  }
+  .result-item .name {
+    font-size: 10px;
+    color: #a78bfa;
+    margin-top: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .no-result {
+    text-align: center;
+    color: #6b5b8a;
+    padding: 20px;
+    font-size: 13px;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .no-result .icon-svg { 
+    width: 32px; 
+    height: 32px; 
+    color: #6b5b8a;
+    opacity: 0.6;
+  }
+  
+  /* ===== بخش آپلود ===== */
+  .upload {
+    border: 2px dashed rgba(168,85,247,0.5);
+    border-radius: 14px;
+    padding: 30px 15px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(168,85,247,0.05);
+    transition: 0.3s;
+  }
+  .upload:active { background: rgba(168,85,247,0.15); }
+  .upload input { display: none; }
+  .upload .upload-icon {
+    color: #a855f7;
+    margin-bottom: 10px;
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+  }
+  .upload .upload-icon .icon-svg {
+    width: 100%;
+    height: 100%;
+  }
+  .upload .txt { color: #a78bfa; font-size: 14px; }
+  #preview { margin-top: 14px; max-width: 100px; border-radius: 8px; border: 2px solid #a855f7; image-rendering: pixelated; display: none; }
+  
+  /* ===== تنظیمات ===== */
+  .settings { margin-top: 16px; }
+  .setting { margin-bottom: 14px; }
+  .setting label { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    font-size: 13px; 
+    color: #a78bfa; 
+    margin-bottom: 6px; 
+  }
+  .setting .val { 
+    color: #c084fc; 
+    font-weight: 700; 
+    background: rgba(168,85,247,0.15); 
+    padding: 1px 8px; 
+    border-radius: 6px; 
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7c3aed, #a855f7, #d946ef);
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 15px rgba(168,85,247,0.9);
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    box-shadow: 0 0 15px rgba(168,85,247,0.9);
+    cursor: pointer;
+  }
+  
+  /* ===== دکمه‌ها ===== */
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button {
+    flex: 1;
+    min-width: 130px;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  button .icon-svg { width: 16px; height: 16px; }
+  
+  .btn-p {
+    background: linear-gradient(135deg, #a855f7, #7c3aed, #d946ef);
+    color: white;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.4);
+  }
+  .btn-p:active:not(:disabled) { transform: scale(0.98); }
+  .btn-s {
+    background: rgba(168,85,247,0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(168,85,247,0.3);
+  }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  
+  /* ===== پیش‌نمایش سه‌بعدی ===== */
+  #viewer {
+    width: 100%;
+    height: 350px;
+    border-radius: 14px;
+    background: radial-gradient(circle at center, #150a26, #0a0614);
+    overflow: hidden;
+    border: 1px solid rgba(168,85,247,0.2);
+  }
+  .info {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(168,85,247,0.06);
+    border-radius: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #a78bfa;
+  }
+  .info span { display: inline-flex; align-items: center; gap: 6px; }
+  .info .icon-svg { width: 14px; height: 14px; opacity: 0.9; }
+  .info b { color: #c084fc; }
+  
+  /* ===== وضعیت ===== */
+  .status {
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+    color: #6b5b8a;
+    margin-top: 10px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .status .icon-svg { width: 16px; height: 16px; }
+  .status.ok { color: #4ade80; background: rgba(74,222,128,0.08); }
+  .status.err { color: #f87171; background: rgba(248,113,113,0.08); }
+  .status.load { color: #c084fc; background: rgba(168,85,247,0.08); }
+  
+  .hint {
+    text-align: center;
+    font-size: 11px;
+    color: #6b5b8a;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+  
+  /* چرخش برای لودینگ */
+  .spin {
+    animation: spinAnim 1s linear infinite;
+  }
+  @keyframes spinAnim {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== آیکون‌های SVG مخفی ===== -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+  <defs>
+    <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/>
+      <path d="M3 7l9 5 9-5"/>
+      <path d="M12 12v10"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="M21 21l-4.3-4.3"/>
+    </symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="9" cy="9" r="2"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </symbol>
+    <symbol id="i-wand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 4V2"/>
+      <path d="M15 16v-2"/>
+      <path d="M8 9h2"/>
+      <path d="M20 9h2"/>
+      <path d="M17.8 11.8L19 13"/>
+      <path d="M17.8 6.2L19 5"/>
+      <path d="M3 21l9-9"/>
+      <path d="M12.2 6.2L11 5"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6"/>
+      <path d="M21 3v6h-6"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <path d="M7 10l5 5 5-5"/>
+      <path d="M12 15V3"/>
+    </symbol>
+    <symbol id="i-search-big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="M21 21l-4.3-4.3"/>
+    </symbol>
+    <symbol id="i-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" opacity="0.3"/>
+      <path d="M21 12a9 9 0 0 1-9 9"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6L6 18"/>
+      <path d="M6 6l12 12"/>
+    </symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 15l6 6"/>
+      <path d="M15 3l6 6"/>
+      <path d="M3 9l6-6"/>
+      <path d="M15 21l6-6"/>
+      <path d="M6 12l2 2"/>
+      <path d="M12 6l2 2"/>
+    </symbol>
+    <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+      <path d="M3 8v8l9 5 9-5V8"/>
+      <path d="M12 13v8"/>
+    </symbol>
+    <symbol id="i-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3L2 21h20L12 3z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="container">
+  <!-- ===== هدر ===== -->
+  <div class="header">
+    <div class="logo">
+      <span class="icon-svg"><svg><use href="#i-cube"/></svg></span>
+      <h1>Nova Rigs</h1>
+    </div>
+    <p class="sub">تکسچرت رو جستجو کن یا آپلود کن، بعد به مدل سه‌بعدی تبدیلش کن</p>
+  </div>
+
+  <!-- ===== بخش جستجو ===== -->
+  <div class="panel">
+    <div class="panel-title">
+      <span class="icon-svg"><svg><use href="#i-search"/></svg></span>
+      جستجوی تکسچر ماینکرفت
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="مثلاً: horse, diamond, stone...">
+      <button id="searchBtn">
+        <span class="icon-svg"><svg><use href="#i-search"/></svg></span>
+        جستجو
+      </button>
+    </div>
+    <div class="tag-list" id="tagList"></div>
+    <div class="results" id="results">
+      <div class="no-result">
+        <span class="icon-svg"><svg><use href="#i-search-big"/></svg></span>
+        کلمه‌ای برای جستجو وارد کن یا از تگ‌های بالا انتخاب کن
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== بخش آپلود/تبدیل ===== -->
+  <div class="panel">
+    <div class="panel-title">
+      <span class="icon-svg"><svg><use href="#i-image"/></svg></span>
+      تکسچر انتخاب‌شده
+    </div>
+    <div class="upload" onclick="document.getElementById('file').click()">
+      <input type="file" id="file" accept="image/*">
+      <div class="upload-icon">
+        <span class="icon-svg"><svg><use href="#i-image"/></svg></span>
+      </div>
+      <div class="txt" id="uploadTxt">برای انتخاب تکسچر از سیستم کلیک کن</div>
+      <img id="preview">
+    </div>
+
+    <div class="settings">
+      <div class="setting">
+        <label>ضخامت <span class="val" id="tv">1.0</span></label>
+        <input type="range" id="thick" min="0.1" max="3" step="0.1" value="1">
+      </div>
+      <div class="setting">
+        <label>آستانه شفافیت <span class="val" id="av">128</span></label>
+        <input type="range" id="alpha" min="0" max="255" value="128">
+      </div>
+      <div class="setting">
+        <label>حداکثر ابعاد <span class="val" id="mv">64</span></label>
+        <input type="range" id="maxs" min="16" max="256" step="16" value="64">
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="btn-p" id="conv" disabled>
+        <span class="icon-svg"><svg><use href="#i-wand"/></svg></span>
+        تبدیل
+      </button>
+      <button class="btn-s" id="rst" disabled>
+        <span class="icon-svg"><svg><use href="#i-refresh"/></svg></span>
+        ریست
+      </button>
+    </div>
+    <div class="status" id="st">منتظر انتخاب تکسچر...</div>
+  </div>
+
+  <!-- ===== پیش‌نمایش سه‌بعدی ===== -->
+  <div class="panel">
+    <div class="panel-title">
+      <span class="icon-svg"><svg><use href="#i-cube"/></svg></span>
+      پیش‌نمایش سه‌بعدی
+    </div>
+    <div id="viewer"></div>
+    <div class="info">
+      <span>
+        <span class="icon-svg"><svg><use href="#i-ruler"/></svg></span>
+        سایز: <b id="os">-</b>
+      </span>
+      <span>
+        <span class="icon-svg"><svg><use href="#i-box"/></svg></span>
+        ووکسل: <b id="vc">-</b>
+      </span>
+      <span>
+        <span class="icon-svg"><svg><use href="#i-triangle"/></svg></span>
+        وجه: <b id="fc">-</b>
+      </span>
+    </div>
+    <div class="btns">
+      <button class="btn-p" id="dlZip" disabled>
+        <span class="icon-svg"><svg><use href="#i-download"/></svg></span>
+        دانلود پکیج کامل (ZIP)
+      </button>
+    </div>
+    <div class="hint">
+      شامل: model.obj + model.mtl + texture.png<br>
+      هر سه فایل رو با هم توی یه پوشه بذار و توی Prisma/Blender باز کن
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+// ===== لیست تکسچرهای آماده =====
+var TEXTURE_DATABASE = [
+  { name: 'diamond',  category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/diamond.png' },
+  { name: 'emerald',  category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/emerald.png' },
+  { name: 'gold_ingot', category: 'آیتم',    url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/gold_ingot.png' },
+  { name: 'iron_ingot', category: 'آیتم',    url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/iron_ingot.png' },
+  { name: 'netherite_ingot', category: 'آیتم', url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/netherite_ingot.png' },
+  { name: 'apple',    category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/apple.png' },
+  { name: 'bread',    category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/bread.png' },
+  { name: 'stick',    category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/stick.png' },
+  { name: 'bone',     category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/bone.png' },
+  { name: 'gunpowder',category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/gunpowder.png' },
+  { name: 'blaze_rod',category: 'آیتم',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/blaze_rod.png' },
+  { name: 'ender_pearl', category: 'آیتم',   url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/ender_pearl.png' },
+  { name: 'slime_ball',  category: 'آیتم',   url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/slime_ball.png' },
+  { name: 'amethyst_shard', category: 'آیتم', url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/items/amethyst_shard.png' },
+  { name: 'stone',    category: 'بلاک',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/stone.png' },
+  { name: 'dirt',     category: 'بلاک',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/dirt.png' },
+  { name: 'grass_block_top', category: 'بلاک', url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/grass_block_top.png' },
+  { name: 'oak_planks', category: 'بلاک',    url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/oak_planks.png' },
+  { name: 'cobblestone', category: 'بلاک',   url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/cobblestone.png' },
+  { name: 'diamond_ore', category: 'بلاک',   url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/diamond_ore.png' },
+  { name: 'gold_ore', category: 'بلاک',      url: 'https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.4/blocks/gold_ore.png' },
+  { name: 'iron_ore', category: 'بلاک',      url: '
