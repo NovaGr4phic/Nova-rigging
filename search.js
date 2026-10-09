@@ -1,6 +1,5 @@
 // ===== جستجوی تکسچر =====
-var ZIP_URL_ORIGINAL = 'https://github.com/NovaGr4phic/Nova-rigging/releases/download/v1.0/textures.zip';
-var ZIP_URL = 'https://corsproxy.io/?url=' + encodeURIComponent(ZIP_URL_ORIGINAL);
+var ZIP_URL = 'https://novagr4phic.github.io/Nova-rigging/items.zip';
 var TEXTURE_DATABASE = [];
 var ZIP_LOADED = false;
 var LOADING = false;
@@ -27,22 +26,13 @@ function loadFromZip() {
 
       zip.forEach(function(path, file) {
         if (!path.toLowerCase().endsWith('.png')) return;
-        if (path.indexOf('textures/items/') === -1 &&
-            path.indexOf('textures/blocks/') === -1 &&
-            path.indexOf('textures/entity/') === -1) return;
         if (count >= 2000) return;
         count++;
 
         var p = file.async('base64').then(function(base64) {
           var name = path.split('/').pop().replace('.png', '');
-          var category = 'تکسچر';
-          if (path.indexOf('items/') !== -1) category = 'آیتم';
-          else if (path.indexOf('blocks/') !== -1) category = 'بلاک';
-          else if (path.indexOf('entity/') !== -1) category = 'موجود';
-
           TEXTURE_DATABASE.push({
             name: name,
-            category: category,
             dataUrl: 'data:image/png;base64,' + base64
           });
         });
@@ -84,8 +74,7 @@ function doSearch() {
   }
 
   var found = TEXTURE_DATABASE.filter(function(item) {
-    return item.name.toLowerCase().indexOf(q) !== -1 ||
-           item.category.indexOf(q) !== -1;
+    return item.name.toLowerCase().indexOf(q) !== -1;
   });
 
   if (found.length === 0) {
