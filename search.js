@@ -113,23 +113,19 @@ function doSearch() {
       var all = results.querySelectorAll('.result-item');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('selected');
       div.classList.add('selected');
-      loadTextureFromDataURL(item.dataUrl, item.name);
+      // ===== اینجا مستقیم تابع processLoadedImage رو صدا می‌زنیم =====
+      var newImg = new Image();
+      newImg.onload = function() {
+        processLoadedImage(newImg, item.name);
+      };
+      newImg.onerror = function() {
+        showStatus('err', 'خطا در بارگذاری تکسچر');
+      };
+      newImg.src = item.dataUrl;
     };
 
     results.appendChild(div);
   });
-}
-
-function loadTextureFromDataURL(dataUrl, name) {
-  showStatus('load', 'در حال پردازش...');
-  var img = new Image();
-  img.onload = function() {
-    processLoadedImage(img, name);
-  };
-  img.onerror = function() {
-    showStatus('err', 'خطا در بارگذاری تکسچر');
-  };
-  img.src = dataUrl;
 }
 
 // ===== شروع =====
