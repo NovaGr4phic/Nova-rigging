@@ -1,5 +1,6 @@
 // ===== جستجوی تکسچر =====
-var ZIP_URL = 'https://github.com/NovaGr4phic/Nova-rigging/releases/download/v1.0/textures.zip';
+var ZIP_URL_ORIGINAL = 'https://github.com/NovaGr4phic/Nova-rigging/releases/download/v1.0/textures.zip';
+var ZIP_URL = 'https://corsproxy.io/?url=' + encodeURIComponent(ZIP_URL_ORIGINAL);
 var TEXTURE_DATABASE = [];
 var ZIP_LOADED = false;
 var LOADING = false;
@@ -54,7 +55,6 @@ function loadFromZip() {
     .then(function() {
       ZIP_LOADED = true;
       LOADING = false;
-      console.log(TEXTURE_DATABASE.length + ' textures loaded');
 
       document.getElementById('results').innerHTML =
         '<div class="no-result">' + TEXTURE_DATABASE.length + ' تکسچر آماده جستجوئه!<br>یه کلمه تایپ کن</div>';
@@ -113,13 +113,31 @@ function doSearch() {
       var all = results.querySelectorAll('.result-item');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('selected');
       div.classList.add('selected');
-      // ===== اینجا مستقیم تابع processLoadedImage رو صدا می‌زنیم =====
+
       var newImg = new Image();
       newImg.onload = function() {
-        processLoadedImage(newImg, item.name);
+        try {
+          originalCanvas = document.createElement('canvas');
+          originalCanvas.width = newImg.width;
+          originalCanvas.height = newImg.height;
+          var ctx = originalCanvas.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(newImg, 0, 0);
+          imgData = ctx.getImageData(0, 0, newImg.width, newImg.height);
+
+          document.getElementById('preview').src = originalCanvas.toDataURL('image/png');
+          document.getElementById('preview').style.display = 'block';
+          document.getElementById('os').textContent = newImg.width + '×' + newImg.height;
+          document.getElementById('uploadTxt').textContent = 'انتخاب شد: ' + item.name;
+          showStatus('ok', 'آماده تبدیل');
+          document.getElementById('conv').disabled = false;
+          document.getElementById('rst').disabled = false;
+        } catch(e) {
+          showStatus('err', 'خطا در پردازش تصویر');
+        }
       };
       newImg.onerror = function() {
-        showStatus('err', 'خطا در بارگذاری تکسچر');
+        showStatus('err', 'خطا در بارگذاری تصویر');
       };
       newImg.src = item.dataUrl;
     };
